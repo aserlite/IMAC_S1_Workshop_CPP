@@ -17,8 +17,9 @@ void noise(sil::Image &image);
 void rotate_90(sil::Image &image);
 void rgb_split(sil::Image &image);
 void luminosity(sil::Image &image, float coef);
-sil::Image disk(int margin);
+sil::Image disk(int margin , int decx = 0, int decy = 0);
 sil::Image circle(int margin, int thickness);
+void animated_disk(int space);
 
 
 } 

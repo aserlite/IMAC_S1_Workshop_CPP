@@ -9,7 +9,10 @@ int main()
     //image = Effects::fade();
     //Effects::rgb_split(image);
     // image = Effects::disk(50);
-    image = Effects::circle(50,15);
+    // image = Effects::circle(50,15);
+    image = Effects::disk(100,50);
+
+    Effects::animated_disk(25);
 
     image.save("output/pouet.png");
 }

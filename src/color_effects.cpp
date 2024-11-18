@@ -186,14 +186,14 @@ namespace Effects
         }
     }
 
-    sil::Image disk(int margin)
+    sil::Image disk(int margin, int decx, int decy)
     {
         int width = 500;
         int height = 500;
         sil::Image image{width, height};
 
-        int centerX = width / 2;
-        int centerY = height / 2;
+        int centerX = width / 2 + decx;
+        int centerY = height / 2 + decy;
         int radius = std::min(width, height) / 2 - margin;
 
         for (int x = 0; x < width; ++x)
@@ -240,29 +240,14 @@ namespace Effects
         return image;
     }
 
-    sil::Image disk(int margin)
+    void animated_disk(int space)
     {
-        int width = 500;
-        int height = 500;
-        sil::Image image{width, height};
-
-        int centerX = width / 2;
-        int centerY = height / 2;
-        int radius = std::min(width, height) / 2 - margin;
-
-        for (int x = 0; x < width; ++x)
-        {
-            for (int y = 0; y < height; ++y)
-            {
-                int dx = x - centerX;
-                int dy = y - centerY;
-                if (dx * dx + dy * dy < radius * radius)
-                {
-                    image.pixel(x, y) = {1.0f, 1.0f, 1.0f};
-                }
-            }
+        int frames = 0;
+        for(int i = -250; i <= 250; i += space){
+            sil::Image image = disk(100, i, 0);
+            std::string name = "output/animation/frame" + std::to_string(frames) + ".png";
+            frames++;
+            image.save(name);
         }
-
-        return image;
     }
 }
