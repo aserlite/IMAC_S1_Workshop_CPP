@@ -212,14 +212,13 @@ namespace Effects
         return image;
     }
 
-    sil::Image circle(int margin, int thickness)
+    sil::Image circle(sil::Image &image, int margin, int thickness, int decx, int decy)
     {
-        int width = 500;
-        int height = 500;
-        sil::Image image{width, height};
+        int width = image.width();
+        int height = image.height();
 
-        int centerX = width / 2;
-        int centerY = height / 2;
+        int centerX = width / 2 + decx;
+        int centerY = height / 2 + decy;
         int outerRadius = std::min(width, height) / 2 - margin;
         int innerRadius = outerRadius - thickness;
 
@@ -243,11 +242,166 @@ namespace Effects
     void animated_disk(int space)
     {
         int frames = 0;
-        for(int i = -250; i <= 250; i += space){
+        for (int i = -250; i <= 250; i += space)
+        {
             sil::Image image = disk(100, i, 0);
             std::string name = "output/animation/frame" + std::to_string(frames) + ".png";
             frames++;
             image.save(name);
         }
     }
+
+    sil::Image rosace()
+    {
+        sil::Image image{500, 500};
+        int margin = 150;
+        int thickness = 5;
+        int radius = image.width() / 2 - margin;
+        Effects::circle(image, margin, thickness, 0, 0);
+        Effects::circle(image, margin, thickness, 100, 0);
+        Effects::circle(image, margin, thickness, -100, 0);
+        Effects::circle(image, margin, thickness, radius / 2, radius - radius / 6);
+        Effects::circle(image, margin, thickness, -radius / 2, radius - radius / 6);
+        Effects::circle(image, margin, thickness, radius / 2, -radius + radius / 6);
+        Effects::circle(image, margin, thickness, -radius / 2, -radius + radius / 6);
+        return image;
+    }
+
+    void mosaic(sil::Image &pattern)
+    {
+        const int targetWidth = pattern.width() * 4;
+        const int targetHeight = pattern.height() * 4;
+        sil::Image mosaicImage{targetWidth, targetHeight};
+
+        for (int x = 0; x < targetWidth; x += pattern.width())
+        {
+            for (int y = 0; y < targetHeight; y += pattern.height())
+            {
+                for (int i = 0; i < pattern.width(); i++)
+                {
+                    for (int j = 0; j < pattern.height(); j++)
+                    {
+                        if (x + i < targetWidth && y + j < targetHeight)
+                        {
+                            mosaicImage.pixel(x + i, y + j) = pattern.pixel(i, j);
+                        }
+                    }
+                }
+            }
+        }
+
+        pattern = mosaicImage;
+    }
+
+    void miror_mosaic(sil::Image &pattern)
+    {
+        const int targetWidth = pattern.width() * 4;
+        const int targetHeight = pattern.height() * 4;
+        sil::Image mosaicImage{targetWidth, targetHeight};
+
+        for (int x = 0; x < targetWidth; x += pattern.width())
+        {
+            for (int y = 0; y < targetHeight; y += pattern.height())
+            {
+                bool invert = ((x / pattern.width()) % 2 == 1) ^ ((y / pattern.height()) % 2 == 1);
+                for (int i = 0; i < pattern.width(); i++)
+                {
+                    for (int j = 0; j < pattern.height(); j++)
+                    {
+                        int targetX = invert ? pattern.width() - 1 - i : i;
+                        int targetY = invert ? pattern.height() - 1 - j : j;
+                        if (x + i < targetWidth && y + j < targetHeight)
+                        {
+                            mosaicImage.pixel(x + i, y + j) = pattern.pixel(targetX, targetY);
+                        }
+                    }
+                }
+            }
+        }
+
+        pattern = mosaicImage;
+    }
+
+    void glitch(sil::Image &image)
+    {
+        int iterations = 50;
+        for (int i = 0; i < iterations; ++i)
+        {
+            int block_width = random_int(5, 25);
+            int block_height = random_int(5, 15);
+
+            int x1 = random_int(0, image.width() - block_width);
+            int y1 = random_int(0, image.height() - block_height);
+            int x2 = random_int(0, image.width() - block_width);
+            int y2 = random_int(0, image.height() - block_height);
+            for (int dx = 0; dx < block_width; ++dx)
+            {
+                for (int dy = 0; dy < block_height; ++dy)
+                {
+                    if (x1 + dx < image.width() && y1 + dy < image.height() &&
+                        x2 + dx < image.width() && y2 + dy < image.height())
+                    {
+                        std::swap(image.pixel(x1 + dx, y1 + dy), image.pixel(x2 + dx, y2 + dy));
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < iterations / 2; ++i)
+        {
+            int line = random_int(0, image.height());
+            int offset = random_int(-30, 30);
+
+            for (int x = 0; x < image.width(); ++x)
+            {
+                int new_x = (x + offset + image.width()) % image.width();
+                std::swap(image.pixel(x, line), image.pixel(new_x, line));
+            }
+        }
+    }
+
+    void sort_pixels(sil::Image &image){
+        for (int x = 0; x < image.width(); ++x)
+        {
+            std::vector<std::tuple<float, float, float>> column;
+            for (int y = 0; y < image.height(); ++y)
+            {
+                auto pixel = image.pixel(x, y);
+                column.emplace_back(pixel.r, pixel.g, pixel.b);
+            }
+
+            std::sort(column.begin(), column.end(), [](const auto &a, const auto &b)
+            {
+                return (std::get<0>(a) + std::get<1>(a) + std::get<2>(a)) < (std::get<0>(b) + std::get<1>(b) + std::get<2>(b)); 
+            });
+
+            for (int y = 0; y < image.height(); ++y)
+            {
+                auto &[r, g, b] = column[y];
+                image.pixel(x, y).r = r;
+                image.pixel(x, y).g = g;
+                image.pixel(x, y).b = b;
+            }
+        }
+    }
+
+    sil::Image fade_between_colors(const glm::vec3 &color1, const glm::vec3 &color2)
+    {
+        sil::Image image{300 /*width*/, 200 /*height*/};
+
+        for (int x{0}; x < image.width(); ++x)
+        {
+            for (int y{0}; y < image.height(); ++y)
+            {
+                float percentage = static_cast<float>(x) / image.width();
+                glm::vec3 mixed_color = glm::mix(color1, color2, percentage);
+                image.pixel(x, y).r = mixed_color.r;
+                image.pixel(x, y).g = mixed_color.g;
+                image.pixel(x, y).b = mixed_color.b;
+            }
+        }
+
+        return image;
+    }
+    
+    
 }

@@ -18,8 +18,13 @@ void rotate_90(sil::Image &image);
 void rgb_split(sil::Image &image);
 void luminosity(sil::Image &image, float coef);
 sil::Image disk(int margin , int decx = 0, int decy = 0);
-sil::Image circle(int margin, int thickness);
+sil::Image circle(sil::Image &image,int margin, int thickness, int decx = 0, int decy = 0);
 void animated_disk(int space);
+sil::Image rosace();
+void mosaic(sil::Image &image);
+void miror_mosaic (sil::Image &pattern);
+void glitch(sil::Image &image);
+sil::Image fade_between_colors(const glm::vec3 &color1, const glm::vec3 &color2);
 
 
 } 
