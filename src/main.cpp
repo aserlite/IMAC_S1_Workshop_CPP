@@ -23,8 +23,33 @@ int main()
     // image = Effects::mandelbrot(500, 500, 100);
     // Effects::contrast_stretching(image);
     // Effects::vortex(image, 15.f);
-    Effects::convolution(image, {{0.0625, 0.125, 0.0625}, {0.125, 0.25, 0.125}, {0.0625, 0.125, 0.0625}});
 
+    std::vector<std::vector<float>> emboss = {
+    {-2, -1, 0},
+    {-1,  1, 1},
+    { 0,  1, 2}
+    };
+    std::vector<std::vector<float>> outline = {
+        {-1, -1, -1},
+        {-1,  8, -1},
+        {-1, -1, -1}
+    };
+    std::vector<std::vector<float>> sharpen = {
+        { 0, -1,  0},
+        {-1,  5, -1},
+        { 0, -1,  0}
+    };
+
+    std::vector<std::vector<float>> gaussian = {
+        {1 / 273.0f,  4 / 273.0f,  7 / 273.0f,  4 / 273.0f, 1 / 273.0f},
+        {4 / 273.0f, 16 / 273.0f, 26 / 273.0f, 16 / 273.0f, 4 / 273.0f},
+        {7 / 273.0f, 26 / 273.0f, 41 / 273.0f, 26 / 273.0f, 7 / 273.0f},
+        {4 / 273.0f, 16 / 273.0f, 26 / 273.0f, 16 / 273.0f, 4 / 273.0f},
+        {1 / 273.0f,  4 / 273.0f,  7 / 273.0f,  4 / 273.0f, 1 / 273.0f}
+    };
+    
+    Effects::convolution(image, gaussian);
+    
     image.save("output/pouet.png");
 }
 

@@ -567,4 +567,5 @@ namespace Effects
 
         image = result;
     }
+
 }
