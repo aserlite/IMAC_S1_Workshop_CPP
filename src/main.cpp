@@ -4,7 +4,7 @@
 
 int main()
 {
-    sil::Image image{"images/logo.png"};
+    sil::Image image{"images/photo.jpg"};
     //Effects::luminosity(image,0.4f);
     //image = Effects::fade();
     //Effects::rgb_split(image);
@@ -18,8 +18,12 @@ int main()
 
     // image = Effects::rosace();
     //Effects::miror_mosaic(image);
-    Effects::glitch(image);
-    image = Effects::fade_between_colors(glm::vec3{1.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 0.0f, 1.0f});
+    // Effects::sort_pixels(image);
+    //image = Effects::fade_between_colors(glm::vec3{1.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 0.0f, 1.0f});
+    // image = Effects::mandelbrot(500, 500, 100);
+    // Effects::contrast_stretching(image);
+    // Effects::vortex(image, 15.f);
+    Effects::convolution(image, {{0.0625, 0.125, 0.0625}, {0.125, 0.25, 0.125}, {0.0625, 0.125, 0.0625}});
 
     image.save("output/pouet.png");
 }

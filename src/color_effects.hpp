@@ -4,6 +4,7 @@
 #include <sil/sil.hpp>
 #include <functional>
 #include "random.hpp"
+#include <complex>
 
 namespace Effects {
 
@@ -25,6 +26,12 @@ void mosaic(sil::Image &image);
 void miror_mosaic (sil::Image &pattern);
 void glitch(sil::Image &image);
 sil::Image fade_between_colors(const glm::vec3 &color1, const glm::vec3 &color2);
+void sort_pixels(sil::Image &image);
+sil::Image mandelbrot(int width, int height, int max_iterations);
+void dithering(sil::Image &image);
+void contrast_stretching(sil::Image &image);
+void vortex(sil::Image &image, float strength);
+void convolution(sil::Image &image, const std::vector<std::vector<float>> &kernel);
 
 
 } 

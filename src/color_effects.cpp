@@ -359,7 +359,8 @@ namespace Effects
         }
     }
 
-    void sort_pixels(sil::Image &image){
+    void sort_pixels(sil::Image &image)
+    {
         for (int x = 0; x < image.width(); ++x)
         {
             std::vector<std::tuple<float, float, float>> column;
@@ -370,9 +371,7 @@ namespace Effects
             }
 
             std::sort(column.begin(), column.end(), [](const auto &a, const auto &b)
-            {
-                return (std::get<0>(a) + std::get<1>(a) + std::get<2>(a)) < (std::get<0>(b) + std::get<1>(b) + std::get<2>(b)); 
-            });
+                      { return (std::get<0>(a) + std::get<1>(a) + std::get<2>(a)) < (std::get<0>(b) + std::get<1>(b) + std::get<2>(b)); });
 
             for (int y = 0; y < image.height(); ++y)
             {
@@ -402,6 +401,170 @@ namespace Effects
 
         return image;
     }
-    
-    
+
+    sil::Image mandelbrot(int width, int height, int max_iterations)
+    {
+        sil::Image image{width, height};
+
+        for (int x = 0; x < width; ++x)
+        {
+            for (int y = 0; y < height; ++y)
+            {
+                std::complex<float> c((x - width / 2.0f) * 4.0f / width, (y - height / 2.0f) * 4.0f / height);
+                std::complex<float> z = 0;
+                int iterations = 0;
+
+                while (std::abs(z) <= 2.0f && iterations < max_iterations)
+                {
+                    z = z * z + c;
+                    ++iterations;
+                }
+
+                float intensity = static_cast<float>(iterations) / max_iterations;
+                image.pixel(x, y).r = intensity;
+                image.pixel(x, y).g = intensity;
+                image.pixel(x, y).b = intensity;
+            }
+        }
+
+        return image;
+    }
+
+    void dithering(sil::Image &image)
+    {
+        for (int y = 0; y < image.height(); ++y)
+        {
+            for (int x = 0; x < image.width(); ++x)
+            {
+                float old_pixel = image.pixel(x, y).r;
+                float new_pixel = old_pixel > 0.5f ? 1.0f : 0.0f;
+                image.pixel(x, y).r = new_pixel;
+                image.pixel(x, y).g = new_pixel;
+                image.pixel(x, y).b = new_pixel;
+                float quant_error = old_pixel - new_pixel;
+
+                if (x + 1 < image.width())
+                {
+                    image.pixel(x + 1, y).r += quant_error * 7 / 16;
+                    image.pixel(x + 1, y).g += quant_error * 7 / 16;
+                    image.pixel(x + 1, y).b += quant_error * 7 / 16;
+                }
+                if (x - 1 >= 0 && y + 1 < image.height())
+                {
+                    image.pixel(x - 1, y + 1).r += quant_error * 3 / 16;
+                    image.pixel(x - 1, y + 1).g += quant_error * 3 / 16;
+                    image.pixel(x - 1, y + 1).b += quant_error * 3 / 16;
+                }
+                if (y + 1 < image.height())
+                {
+                    image.pixel(x, y + 1).r += quant_error * 5 / 16;
+                    image.pixel(x, y + 1).g += quant_error * 5 / 16;
+                    image.pixel(x, y + 1).b += quant_error * 5 / 16;
+                }
+                if (x + 1 < image.width() && y + 1 < image.height())
+                {
+                    image.pixel(x + 1, y + 1).r += quant_error * 1 / 16;
+                    image.pixel(x + 1, y + 1).g += quant_error * 1 / 16;
+                    image.pixel(x + 1, y + 1).b += quant_error * 1 / 16;
+                }
+            }
+        }
+    }
+
+    void contrast_stretching(sil::Image &image)
+    {
+        float min_luminance = 1.0f;
+        float max_luminance = 0.0f;
+        for (int x = 0; x < image.width(); ++x)
+        {
+            for (int y = 0; y < image.height(); ++y)
+            {
+                float luminance = 0.30f * image.pixel(x, y).r + 0.59f * image.pixel(x, y).g + 0.11f * image.pixel(x, y).b;
+                if (luminance < min_luminance)
+                {
+                    min_luminance = luminance;
+                }
+                if (luminance > max_luminance)
+                {
+                    max_luminance = luminance;
+                }
+            }
+        }
+        for (int x = 0; x < image.width(); ++x)
+        {
+            for (int y = 0; y < image.height(); ++y)
+            {
+                float &r = image.pixel(x, y).r;
+                float &g = image.pixel(x, y).g;
+                float &b = image.pixel(x, y).b;
+
+                r = (r - min_luminance) / (max_luminance - min_luminance);
+                g = (g - min_luminance) / (max_luminance - min_luminance);
+                b = (b - min_luminance) / (max_luminance - min_luminance);
+            }
+        }
+    }
+
+    void vortex(sil::Image &image, float strength)
+    {
+        sil::Image original = image;
+        int centerX = image.width() / 2;
+        int centerY = image.height() / 2;
+
+        for (int x = 0; x < image.width(); ++x)
+        {
+            for (int y = 0; y < image.height(); ++y)
+            {
+                int dx = x - centerX;
+                int dy = y - centerY;
+                float distance = std::sqrt(dx * dx + dy * dy);
+                float angle = std::atan2(dy, dx) + strength * distance / std::min(image.width(), image.height());
+
+                int srcX = static_cast<int>(centerX + distance * std::cos(angle));
+                int srcY = static_cast<int>(centerY + distance * std::sin(angle));
+
+                if (srcX >= 0 && srcX < image.width() && srcY >= 0 && srcY < image.height())
+                {
+                    image.pixel(x, y) = original.pixel(srcX, srcY);
+                }
+            }
+        }
+    }
+
+    void convolution(sil::Image &image, const std::vector<std::vector<float>> &kernel)
+    {
+        int kernel_size = kernel.size();
+        int offset = kernel_size / 2;
+        sil::Image result = image;
+
+        for (int x = 0; x < image.width(); ++x)
+        {
+            for (int y = 0; y < image.height(); ++y)
+            {
+                float r = 0.0f, g = 0.0f, b = 0.0f;
+
+                for (int i = 0; i < kernel_size; ++i)
+                {
+                    for (int j = 0; j < kernel_size; ++j)
+                    {
+                        int ix = x + i - offset;
+                        int iy = y + j - offset;
+
+                        if (ix >= 0 && ix < image.width() && iy >= 0 && iy < image.height())
+                        {
+                            r += image.pixel(ix, iy).r * kernel[i][j];
+                            g += image.pixel(ix, iy).g * kernel[i][j];
+                            b += image.pixel(ix, iy).b * kernel[i][j];
+                        }
+                    }
+                }
+
+                result.pixel(x, y).r = std::min(1.0f, std::max(0.0f, r));
+                result.pixel(x, y).g = std::min(1.0f, std::max(0.0f, g));
+                result.pixel(x, y).b = std::min(1.0f, std::max(0.0f, b));
+            }
+        }
+
+        image = result;
+    }
 }
