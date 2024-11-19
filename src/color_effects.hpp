@@ -32,7 +32,10 @@ void dithering(sil::Image &image);
 void contrast_stretching(sil::Image &image);
 void vortex(sil::Image &image, float strength);
 void convolution(sil::Image &image, const std::vector<std::vector<float>> &kernel);
-
+void gaussian_blur(sil::Image &image, float sigma);
+void gaussian_difference(sil::Image &image,float sigma );
+void k_means_clustering(sil::Image &image, int k);
+void kuwahara_filter(sil::Image &image, int radius);
 
 } 
 

@@ -40,16 +40,12 @@ int main()
         { 0, -1,  0}
     };
 
-    std::vector<std::vector<float>> gaussian = {
-        {1 / 273.0f,  4 / 273.0f,  7 / 273.0f,  4 / 273.0f, 1 / 273.0f},
-        {4 / 273.0f, 16 / 273.0f, 26 / 273.0f, 16 / 273.0f, 4 / 273.0f},
-        {7 / 273.0f, 26 / 273.0f, 41 / 273.0f, 26 / 273.0f, 7 / 273.0f},
-        {4 / 273.0f, 16 / 273.0f, 26 / 273.0f, 16 / 273.0f, 4 / 273.0f},
-        {1 / 273.0f,  4 / 273.0f,  7 / 273.0f,  4 / 273.0f, 1 / 273.0f}
-    };
-    
-    Effects::convolution(image, gaussian);
-    
+    // Effects::convolution(image, sharpen);
+
+    // Effects::gaussian_blur(image,3.f);
+    // Effects::gaussian_difference(image,5.5f);    
+
+    Effects::k_means_clustering(image, 16);
     image.save("output/pouet.png");
 }
 
