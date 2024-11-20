@@ -36,6 +36,7 @@ void gaussian_blur(sil::Image &image, float sigma);
 void gaussian_difference(sil::Image &image,float sigma );
 void k_means_clustering(sil::Image &image, int k);
 void kuwahara_filter(sil::Image &image, int radius);
+sil::Image diamond_square(int size);
 
 } 
 

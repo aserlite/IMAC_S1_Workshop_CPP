@@ -45,7 +45,9 @@ int main()
     // Effects::gaussian_blur(image,3.f);
     // Effects::gaussian_difference(image,5.5f);    
 
-    Effects::k_means_clustering(image, 16);
+    // Effects::k_means_clustering(image, 16);
+
+    image = Effects::diamond_square(10); // crash au dessus de 14
     image.save("output/pouet.png");
 }
 
